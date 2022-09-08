@@ -1,3 +1,4 @@
+import './Layout.module.scss'
 
 interface Props {
   children: React.ReactNode
