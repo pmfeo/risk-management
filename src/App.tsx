@@ -1,24 +1,25 @@
-import "./App.scss";
-import Layout from "./components/layout/Layout";
 
-function App() {
+import './App.scss'
+import Layout from './components/layout/Layout'
+
+function App (): JSX.Element {
   return (
-    // form
-      // initial K
-      // tikr
-      // get actual price
-      // trade price
-      // trade direction
-      // risk
-      // radio SL % | fixed price
-      // SL
-    // submit button
+  // form
+  // initial K
+  // tikr
+  // get actual price
+  // trade price
+  // trade direction
+  // risk
+  // radio SL % | fixed price
+  // SL
+  // submit button
 
-    // results
-      // shares to buy/sell
-      // SL $
-      // position value
-      // $ at risk
+  // results
+  // shares to buy/sell
+  // SL $
+  // position value
+  // $ at risk
 
     <div className="App">
       <Layout>
@@ -29,7 +30,7 @@ function App() {
     // TODO: i18n
     // TODO: add open positions and recalculate available amount
     // TODO: add total risk over available amount
-  );
+  )
 }
 
-export default App;
+export default App
