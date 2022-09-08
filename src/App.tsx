@@ -1,24 +1,31 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import "./App.scss";
 
 function App() {
   return (
+    // TODO: splash screen
+    // TODO: i18n
+    // TODO: add open positions and recalculate available amount
+    // TODO: add total risk over available amount
+
+    // form
+    // initial K
+    // tikr
+    // get actual price
+    // trade price
+    // trade direction
+    // risk
+    // radio SL % | fixed price
+    // SL
+    // submit button
+
+    // results
+    // shares to buy/sell
+    // SL $
+    // position value
+    // $ at risk
+
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Risk Management</h1>
     </div>
   );
 }

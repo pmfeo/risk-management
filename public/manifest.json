@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Risk Management",
+  "name": "A React App for calculate the risk in a trade.",
   "icons": [
     {
       "src": "favicon.ico",
