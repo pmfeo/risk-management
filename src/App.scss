@@ -1,0 +1,16 @@
+@import "~bootstrap/scss/bootstrap";
+@import "custom";
+
+// bs not showing placeholder
+// on floating labels by default
+// https://github.com/twbs/bootstrap/issues/33999
+.form-floating > .form-control:focus {
+    &::placeholder {
+      color: $input-placeholder-color !important;
+    }
+  }
+
+  .form-floating.col > label {
+    padding-left: var(--bs-gutter-x);
+    padding-right: var(--bs-gutter-x);
+  }
