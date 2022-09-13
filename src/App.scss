@@ -5,12 +5,25 @@
 // on floating labels by default
 // https://github.com/twbs/bootstrap/issues/33999
 .form-floating > .form-control:focus {
-    &::placeholder {
-      color: $input-placeholder-color !important;
-    }
+  &::placeholder {
+    color: $input-placeholder-color !important;
   }
+}
 
-  .form-floating.col > label {
-    padding-left: var(--bs-gutter-x);
-    padding-right: var(--bs-gutter-x);
-  }
+.form-floating.col > label {
+  padding-left: var(--bs-gutter-x);
+  padding-right: var(--bs-gutter-x);
+}
+
+// remove arrows from input[type=number]
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  /* Chrome, Safari, Edge, Opera */
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  /* Firefox */
+  -moz-appearance: textfield;
+}

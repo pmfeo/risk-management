@@ -6,7 +6,8 @@
     "extends": [
         "plugin:react/recommended",
         "plugin:react/jsx-runtime",
-        "standard-with-typescript"
+        "standard-with-typescript",
+        "prettier"
     ],
     "overrides": [],
     "parserOptions": {
@@ -29,6 +30,7 @@
         "@typescript-eslint/no-use-before-define": [
             "error"
         ],
+        "@typescript-eslint/strict-boolean-expressions": "warn",
         "react/jsx-filename-extension": [
             "warn",
             {
