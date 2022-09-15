@@ -152,7 +152,6 @@ function CalculateRiskForm(): JSX.Element {
     },
   });
 
-  //   console.log(formik);
   return (
     <Form noValidate onSubmit={formik.handleSubmit}>
       <FloatingLabel
@@ -161,16 +160,17 @@ function CalculateRiskForm(): JSX.Element {
         className="mb-3"
       >
         <Form.Control
-          name="availableFunds"
           type="number"
           min="0"
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          value={formik.values.availableFunds}
-          isInvalid={!!formik.errors.availableFunds}
+          isInvalid={
+            Boolean(formik.errors.availableFunds) &&
+            formik.touched.availableFunds
+          }
+          {...formik.getFieldProps("availableFunds")}
           placeholder="0"
         />
-        {formik.errors.availableFunds && formik.touched.availableFunds ? (
+        {Boolean(formik.errors.availableFunds) &&
+        formik.touched.availableFunds === true ? (
           <Form.Control.Feedback type="invalid">
             {formik.errors.availableFunds}
           </Form.Control.Feedback>
@@ -180,15 +180,12 @@ function CalculateRiskForm(): JSX.Element {
       <FloatingLabel controlId="ticker" label="Ticker" className="mb-3">
         {/* search and retrieve data for price */}
         <Form.Control
-          name="ticker"
           type="text"
           placeholder="SPY"
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          value={formik.values.ticker}
-          isInvalid={!!formik.errors.ticker}
+          isInvalid={Boolean(formik.errors.ticker) && formik.touched.ticker}
+          {...formik.getFieldProps("ticker")}
         />
-        {formik.errors.ticker && formik.touched.ticker ? (
+        {Boolean(formik.errors.ticker) && formik.touched.ticker === true ? (
           <Form.Control.Feedback type="invalid">
             {formik.errors.ticker}
           </Form.Control.Feedback>
@@ -203,12 +200,9 @@ function CalculateRiskForm(): JSX.Element {
         >
           {/* Alert on which price is retrieved, if market is closed, etc */}
           <Form.Control
-            name="getActualPrice"
             type="number"
             min="0"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.getActualPrice}
+            {...formik.getFieldProps("getActualPrice")}
             placeholder="0"
             disabled
           />
@@ -231,16 +225,16 @@ function CalculateRiskForm(): JSX.Element {
         className="mb-3"
       >
         <Form.Control
-          name="tradePrice"
           type="number"
           min="0"
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          value={formik.values.tradePrice}
-          isInvalid={!!formik.errors.tradePrice}
+          isInvalid={
+            Boolean(formik.errors.tradePrice) && formik.touched.tradePrice
+          }
+          {...formik.getFieldProps("tradePrice")}
           placeholder="0"
         />
-        {formik.errors.tradePrice && formik.touched.tradePrice ? (
+        {Boolean(formik.errors.tradePrice) &&
+        formik.touched.tradePrice === true ? (
           <Form.Control.Feedback type="invalid">
             {formik.errors.tradePrice}
           </Form.Control.Feedback>
@@ -254,26 +248,29 @@ function CalculateRiskForm(): JSX.Element {
         <Form.Check
           inline
           id="radio-1"
-          name="tradeDirection"
           label="Long"
           type="radio"
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          isInvalid={!!formik.errors.tradeDirection}
+          isInvalid={
+            Boolean(formik.errors.tradeDirection) &&
+            formik.touched.tradeDirection
+          }
+          {...formik.getFieldProps("tradeDirection")}
           value="1"
         />
         <Form.Check
           inline
           id="radio-2"
-          name="tradeDirection"
           label="Short"
           type="radio"
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          isInvalid={!!formik.errors.tradeDirection}
+          isInvalid={
+            Boolean(formik.errors.tradeDirection) &&
+            formik.touched.tradeDirection
+          }
+          {...formik.getFieldProps("tradeDirection")}
           value="2"
         />
-        {formik.errors.tradeDirection && formik.touched.tradeDirection ? (
+        {Boolean(formik.errors.tradeDirection) &&
+        formik.touched.tradeDirection === true ? (
           <Form.Control.Feedback type="invalid">
             {formik.errors.tradeDirection}
           </Form.Control.Feedback>
@@ -282,16 +279,13 @@ function CalculateRiskForm(): JSX.Element {
 
       <FloatingLabel controlId="risk" label="Risk" className="mb-3">
         <Form.Control
-          name="risk"
           type="number"
           min="0"
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          value={formik.values.risk}
-          isInvalid={!!formik.errors.risk}
+          isInvalid={Boolean(formik.errors.risk) && formik.touched.risk}
+          {...formik.getFieldProps("risk")}
           placeholder="2%"
         />
-        {formik.errors.risk && formik.touched.risk ? (
+        {Boolean(formik.errors.risk) && formik.touched.risk === true ? (
           <Form.Control.Feedback type="invalid">
             {formik.errors.risk}
           </Form.Control.Feedback>
@@ -306,16 +300,16 @@ function CalculateRiskForm(): JSX.Element {
           className="mb-3"
         >
           <Form.Control
-            name="stopLoss"
             type="number"
             min="0"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.stopLoss}
-            isInvalid={!!formik.errors.stopLoss}
+            isInvalid={
+              Boolean(formik.errors.stopLoss) && formik.touched.stopLoss
+            }
+            {...formik.getFieldProps("stopLoss")}
             placeholder="0"
           />
-          {formik.errors.stopLoss && formik.touched.stopLoss ? (
+          {Boolean(formik.errors.stopLoss) &&
+          formik.touched.stopLoss === true ? (
             <Form.Control.Feedback type="invalid">
               {formik.errors.stopLoss}
             </Form.Control.Feedback>
@@ -325,23 +319,23 @@ function CalculateRiskForm(): JSX.Element {
           <Form.Check
             inline
             id="radio-1"
-            name="stopLossType"
             type="radio"
             label="TS%"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            isInvalid={!!formik.errors.stopLossType}
+            isInvalid={
+              Boolean(formik.errors.stopLossType) && formik.touched.stopLossType
+            }
+            {...formik.getFieldProps("stopLossType")}
             value="1"
           />
           <Form.Check
             inline
             id="radio-2"
-            name="stopLossType"
             type="radio"
             label="Fixed price"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            isInvalid={!!formik.errors.stopLossType}
+            isInvalid={
+              Boolean(formik.errors.stopLossType) && formik.touched.stopLossType
+            }
+            {...formik.getFieldProps("stopLossType")}
             value="2"
           />
         </Col>

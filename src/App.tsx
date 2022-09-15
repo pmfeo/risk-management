@@ -56,7 +56,6 @@ function App(): JSX.Element {
   );
 }
 
-// TODO: splash screen
 // TODO: results animation
 // TODO: get quote from API
 // TODO: a11y
