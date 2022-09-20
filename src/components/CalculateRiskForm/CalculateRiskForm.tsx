@@ -1,7 +1,8 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable @typescript-eslint/no-misused-promises */
-import { useContext } from "react";
-import { useFormik } from "formik";
+import {
+  // useEffect,
+  useContext,
+} from "react";
+import { Formik } from "formik";
 import * as Yup from "yup";
 
 import {
@@ -51,7 +52,6 @@ const initialValues: CalculateRiskFormValues = {
   stopLossType: "1",
 };
 
-// utility
 function round(num: number): number {
   const m = Number((Math.abs(num) * 100).toPrecision(15));
   return (Math.round(m) / 100) * Math.sign(num);
@@ -61,36 +61,33 @@ function CalculateRiskForm(): JSX.Element {
   const { setShares, setPosition, setRiskAmount, setStopLossPrice } =
     useContext(ResultContext) as ResultContextInterface;
 
-  const formik = useFormik({
-    initialValues,
-    validationSchema: CalculateRiskFormValidationSchema,
-    validate: (values) => {
-      interface errorsInterface {
-        [key: string]: any;
+  const validate: any = (values: any) => {
+    interface errorsInterface {
+      [key: string]: any;
+    }
+    const errors: errorsInterface = {};
+
+    const { tradeDirection, tradePrice, stopLoss, stopLossType } = values;
+
+    if (stopLossType === "2" && tradePrice && stopLoss) {
+      // Fixed price SL
+      if (tradeDirection === "1" && tradePrice < stopLoss) {
+        // Long
+        errors.stopLoss = "Stop Price must be smaller than Trade Price";
       }
-      const errors: errorsInterface = {};
-
-      const { tradeDirection, tradePrice, stopLoss, stopLossType } = values;
-
-      if (stopLossType === "2" && tradePrice && stopLoss) {
-        // Fixed price SL
-        if (tradeDirection === "1" && tradePrice < stopLoss) {
-          // Long
-          errors.stopLoss = "Stop Price must be smaller than Trade Price";
-        }
-        if (tradeDirection === "2" && tradePrice > stopLoss) {
-          // Short
-          errors.stopLoss = "Stop Price must be greater than Trade Price";
-        }
-        return;
+      if (tradeDirection === "2" && tradePrice > stopLoss) {
+        // Short
+        errors.stopLoss = "Stop Price must be greater than Trade Price";
       }
+      return;
+    }
 
-      return errors;
-    },
-    onSubmit: (values) => {
-      console.log(values);
-      console.log(formik);
+    return errors;
+  };
 
+  const onSubmit: any = (values: CalculateRiskFormValues) => {
+    setTimeout(() => {
+      console.log(`submmiting...`);
       const {
         availableFunds,
         risk,
@@ -143,210 +140,242 @@ function CalculateRiskForm(): JSX.Element {
         } else {
           equityAtRisk = round((stopPrice - tradePrice) * sharesToBuy);
         }
-
-        setShares(sharesToBuy);
-        setPosition(positionValue);
-        setRiskAmount(equityAtRisk);
-        setStopLossPrice(stopPrice);
       }
-    },
-  });
+
+      setShares(sharesToBuy);
+      setPosition(positionValue);
+      setRiskAmount(equityAtRisk);
+      setStopLossPrice(stopPrice);
+
+      console.log(`finish submit`);
+
+      return { sharesToBuy, positionValue, equityAtRisk, stopPrice };
+    }, 1000);
+  };
+
+  // useEffect(() => {
+  //   if(submitCount) {
+  //     console.log(submitCount);
+  //   }
+
+  // }, [submitCount])
 
   return (
-    <Form noValidate onSubmit={formik.handleSubmit}>
-      <FloatingLabel
-        controlId="available-funds"
-        label="Available funds"
-        className="mb-3"
-      >
-        <Form.Control
-          type="number"
-          min="0"
-          isInvalid={
-            Boolean(formik.errors.availableFunds) &&
-            formik.touched.availableFunds
-          }
-          {...formik.getFieldProps("availableFunds")}
-          placeholder="0"
-        />
-        {Boolean(formik.errors.availableFunds) &&
-        formik.touched.availableFunds === true ? (
-          <Form.Control.Feedback type="invalid">
-            {formik.errors.availableFunds}
-          </Form.Control.Feedback>
-        ) : null}
-      </FloatingLabel>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={CalculateRiskFormValidationSchema}
+      validate={validate}
+      onSubmit={onSubmit}
+    >
+      {({
+        errors,
+        touched,
+        handleSubmit,
+        getFieldProps,
+        setFieldValue,
+        dirty,
+        isValid,
+      }) => (
+        <>
+          <Form onSubmit={handleSubmit} data-testid="calculate-form">
+            <FloatingLabel
+              controlId="available-funds"
+              label="Available funds"
+              className="mb-3"
+            >
+              <Form.Control
+                aria-describedby="available-funds"
+                type="number"
+                min="0"
+                isInvalid={
+                  Boolean(errors.availableFunds) && touched.availableFunds
+                }
+                {...getFieldProps("availableFunds")}
+                placeholder="0"
+              />
 
-      <FloatingLabel controlId="ticker" label="Ticker" className="mb-3">
-        {/* search and retrieve data for price */}
-        <Form.Control
-          type="text"
-          placeholder="SPY"
-          isInvalid={Boolean(formik.errors.ticker) && formik.touched.ticker}
-          {...formik.getFieldProps("ticker")}
-        />
-        {Boolean(formik.errors.ticker) && formik.touched.ticker === true ? (
-          <Form.Control.Feedback type="invalid">
-            {formik.errors.ticker}
-          </Form.Control.Feedback>
-        ) : null}
-      </FloatingLabel>
+              {Boolean(errors.availableFunds) &&
+              touched.availableFunds === true ? (
+                <Form.Control.Feedback type="invalid">
+                  {errors.availableFunds}
+                </Form.Control.Feedback>
+              ) : null}
+            </FloatingLabel>
 
-      <Row className="mb-3">
-        <FloatingLabel
-          as={Col}
-          controlId="get-actual-price"
-          label="Get actual price"
-        >
-          {/* Alert on which price is retrieved, if market is closed, etc */}
-          <Form.Control
-            type="number"
-            min="0"
-            {...formik.getFieldProps("getActualPrice")}
-            placeholder="0"
-            disabled
-          />
-        </FloatingLabel>
-        <Col className="align-self-center">
-          <Button
-            onClick={async () => {
-              formik.setFieldValue("getActualPrice", 123);
-              await Promise.resolve();
-            }}
-          >
-            Get quote
-          </Button>
-        </Col>
-      </Row>
+            <FloatingLabel controlId="ticker" label="Ticker" className="mb-3">
+              {/* search and retrieve data for price */}
+              <Form.Control
+                aria-describedby="ticker"
+                type="text"
+                placeholder="SPY"
+                isInvalid={Boolean(errors.ticker) && touched.ticker}
+                {...getFieldProps("ticker")}
+              />
+              {Boolean(errors.ticker) && touched.ticker === true ? (
+                <Form.Control.Feedback type="invalid">
+                  {errors.ticker}
+                </Form.Control.Feedback>
+              ) : null}
+            </FloatingLabel>
 
-      <FloatingLabel
-        controlId="trade-enter-price"
-        label="Trade price"
-        className="mb-3"
-      >
-        <Form.Control
-          type="number"
-          min="0"
-          isInvalid={
-            Boolean(formik.errors.tradePrice) && formik.touched.tradePrice
-          }
-          {...formik.getFieldProps("tradePrice")}
-          placeholder="0"
-        />
-        {Boolean(formik.errors.tradePrice) &&
-        formik.touched.tradePrice === true ? (
-          <Form.Control.Feedback type="invalid">
-            {formik.errors.tradePrice}
-          </Form.Control.Feedback>
-        ) : null}
-      </FloatingLabel>
+            <Row className="mb-3">
+              <FloatingLabel
+                as={Col}
+                controlId="get-actual-price"
+                label="Get actual price"
+              >
+                {/* Alert on which price is retrieved, if market is closed, etc */}
+                <Form.Control
+                  aria-describedby="get-actual-price"
+                  type="number"
+                  min="0"
+                  {...getFieldProps("getActualPrice")}
+                  placeholder="0"
+                  disabled
+                />
+              </FloatingLabel>
+              <Col className="align-self-center">
+                <Button
+                  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                  onClick={async () => {
+                    setFieldValue("getActualPrice", 123);
+                    await Promise.resolve();
+                  }}
+                >
+                  Get quote
+                </Button>
+              </Col>
+            </Row>
 
-      <Form.Group className="mb-3" controlId="trade-direction">
-        <Form.Label className="me-3" style={{ paddingLeft: "0.75rem" }}>
-          Trade Direction
-        </Form.Label>
-        <Form.Check
-          inline
-          id="radio-1"
-          label="Long"
-          type="radio"
-          isInvalid={
-            Boolean(formik.errors.tradeDirection) &&
-            formik.touched.tradeDirection
-          }
-          {...formik.getFieldProps("tradeDirection")}
-          value="1"
-        />
-        <Form.Check
-          inline
-          id="radio-2"
-          label="Short"
-          type="radio"
-          isInvalid={
-            Boolean(formik.errors.tradeDirection) &&
-            formik.touched.tradeDirection
-          }
-          {...formik.getFieldProps("tradeDirection")}
-          value="2"
-        />
-        {Boolean(formik.errors.tradeDirection) &&
-        formik.touched.tradeDirection === true ? (
-          <Form.Control.Feedback type="invalid">
-            {formik.errors.tradeDirection}
-          </Form.Control.Feedback>
-        ) : null}
-      </Form.Group>
+            <FloatingLabel
+              controlId="trade-enter-price"
+              label="Trade price"
+              className="mb-3"
+            >
+              <Form.Control
+                aria-describedby="trade-enter-price"
+                type="number"
+                min="0"
+                isInvalid={Boolean(errors.tradePrice) && touched.tradePrice}
+                {...getFieldProps("tradePrice")}
+                placeholder="0"
+              />
+              {Boolean(errors.tradePrice) && touched.tradePrice === true ? (
+                <Form.Control.Feedback type="invalid">
+                  {errors.tradePrice}
+                </Form.Control.Feedback>
+              ) : null}
+            </FloatingLabel>
 
-      <FloatingLabel controlId="risk" label="Risk" className="mb-3">
-        <Form.Control
-          type="number"
-          min="0"
-          isInvalid={Boolean(formik.errors.risk) && formik.touched.risk}
-          {...formik.getFieldProps("risk")}
-          placeholder="2%"
-        />
-        {Boolean(formik.errors.risk) && formik.touched.risk === true ? (
-          <Form.Control.Feedback type="invalid">
-            {formik.errors.risk}
-          </Form.Control.Feedback>
-        ) : null}
-      </FloatingLabel>
+            <Form.Group className="mb-3">
+              <Form.Label className="me-3" style={{ paddingLeft: "0.75rem" }}>
+                Trade Direction
+              </Form.Label>
+              <Form.Check
+                inline
+                id="radio-1"
+                label="Long"
+                type="radio"
+                isInvalid={
+                  Boolean(errors.tradeDirection) && touched.tradeDirection
+                }
+                {...getFieldProps("tradeDirection")}
+                value="1"
+              />
+              <Form.Check
+                inline
+                id="radio-2"
+                label="Short"
+                type="radio"
+                isInvalid={
+                  Boolean(errors.tradeDirection) && touched.tradeDirection
+                }
+                {...getFieldProps("tradeDirection")}
+                value="2"
+              />
+              {Boolean(errors.tradeDirection) &&
+              touched.tradeDirection === true ? (
+                <Form.Control.Feedback type="invalid">
+                  {errors.tradeDirection}
+                </Form.Control.Feedback>
+              ) : null}
+            </Form.Group>
 
-      <Row className="mb-3">
-        <FloatingLabel
-          as={Col}
-          controlId="stopLoss"
-          label="Stop Loss"
-          className="mb-3"
-        >
-          <Form.Control
-            type="number"
-            min="0"
-            isInvalid={
-              Boolean(formik.errors.stopLoss) && formik.touched.stopLoss
-            }
-            {...formik.getFieldProps("stopLoss")}
-            placeholder="0"
-          />
-          {Boolean(formik.errors.stopLoss) &&
-          formik.touched.stopLoss === true ? (
-            <Form.Control.Feedback type="invalid">
-              {formik.errors.stopLoss}
-            </Form.Control.Feedback>
-          ) : null}
-        </FloatingLabel>
-        <Col className="mb-3 align-self-center">
-          <Form.Check
-            inline
-            id="radio-1"
-            type="radio"
-            label="TS%"
-            isInvalid={
-              Boolean(formik.errors.stopLossType) && formik.touched.stopLossType
-            }
-            {...formik.getFieldProps("stopLossType")}
-            value="1"
-          />
-          <Form.Check
-            inline
-            id="radio-2"
-            type="radio"
-            label="Fixed price"
-            isInvalid={
-              Boolean(formik.errors.stopLossType) && formik.touched.stopLossType
-            }
-            {...formik.getFieldProps("stopLossType")}
-            value="2"
-          />
-        </Col>
-      </Row>
+            <FloatingLabel controlId="risk" label="Risk" className="mb-3">
+              <Form.Control
+                type="number"
+                min="0"
+                isInvalid={Boolean(errors.risk) && touched.risk}
+                {...getFieldProps("risk")}
+                placeholder="2%"
+              />
+              {Boolean(errors.risk) && touched.risk === true ? (
+                <Form.Control.Feedback type="invalid">
+                  {errors.risk}
+                </Form.Control.Feedback>
+              ) : null}
+            </FloatingLabel>
 
-      <div className="d-grid gap-2">
-        <Button variant="primary" size="lg" type="submit">
-          Calculate
-        </Button>
-      </div>
-    </Form>
+            <Row className="mb-3">
+              <FloatingLabel
+                as={Col}
+                controlId="stopLoss"
+                label="Stop Loss"
+                className="mb-3"
+              >
+                <Form.Control
+                  type="number"
+                  min="0"
+                  isInvalid={Boolean(errors.stopLoss) && touched.stopLoss}
+                  {...getFieldProps("stopLoss")}
+                  placeholder="0"
+                />
+                {Boolean(errors.stopLoss) && touched.stopLoss === true ? (
+                  <Form.Control.Feedback type="invalid">
+                    {errors.stopLoss}
+                  </Form.Control.Feedback>
+                ) : null}
+              </FloatingLabel>
+              <Col className="mb-3 align-self-center">
+                <Form.Check
+                  inline
+                  id="radio-1"
+                  type="radio"
+                  label="TS%"
+                  isInvalid={
+                    Boolean(errors.stopLossType) && touched.stopLossType
+                  }
+                  {...getFieldProps("stopLossType")}
+                  value="1"
+                />
+                <Form.Check
+                  inline
+                  id="radio-2"
+                  type="radio"
+                  label="Fixed price"
+                  isInvalid={
+                    Boolean(errors.stopLossType) && touched.stopLossType
+                  }
+                  {...getFieldProps("stopLossType")}
+                  value="2"
+                />
+              </Col>
+            </Row>
+
+            <div className="d-grid gap-2">
+              <Button
+                variant="primary"
+                size="lg"
+                type="submit"
+                disabled={!(isValid && dirty)}
+              >
+                Calculate
+              </Button>
+            </div>
+          </Form>
+        </>
+      )}
+    </Formik>
   );
 }
 

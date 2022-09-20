@@ -15,14 +15,11 @@ function App(): JSX.Element {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // splash screen duration
     setTimeout(() => {
       setLoading(false);
     }, 1000);
   }, [loading]);
-
-  // useEffect(() => {
-  //   console.log(first);
-  // });
 
   return (
     <TransitionGroup>

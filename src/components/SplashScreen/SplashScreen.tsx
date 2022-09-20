@@ -13,7 +13,7 @@ function SplashScreen(): JSX.Element {
           <div className="mb-3 text-capitalize fs-1 fw-bold fst-italic">
             Risk Management
             </div>
-          <Spinner animation="border" />
+          <Spinner animation="border" data-testid="spinner" />
         </Col>
       </Row>
     </Container>
