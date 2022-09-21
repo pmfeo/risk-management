@@ -58,8 +58,16 @@ function round(num: number): number {
 }
 
 function CalculateRiskForm(): JSX.Element {
-  const { setShares, setPosition, setRiskAmount, setStopLossPrice } =
-    useContext(ResultContext) as ResultContextInterface;
+  const {
+    setShares,
+    setPosition,
+    setRiskAmount,
+    setStopLossPrice,
+    setResultsAvailable,
+    setTIA,
+    setTradeDirection,
+    setRiskPercentage,
+  } = useContext(ResultContext) as ResultContextInterface;
 
   const validate: any = (values: any) => {
     interface errorsInterface {
@@ -86,79 +94,72 @@ function CalculateRiskForm(): JSX.Element {
   };
 
   const onSubmit: any = (values: CalculateRiskFormValues) => {
-    setTimeout(() => {
-      console.log(`submmiting...`);
-      const {
-        availableFunds,
-        risk,
-        tradeDirection,
-        tradePrice,
-        stopLoss,
-        stopLossType,
-      } = values;
+    const {
+      availableFunds,
+      risk,
+      tradeDirection,
+      tradePrice,
+      stopLoss,
+      stopLossType,
+    } = values;
 
-      let sharesToBuy: number = 0;
-      let positionValue: number = 0;
-      let equityAtRisk: number = 0;
-      let stopPrice: number = 0;
+    let sharesToTrade: number = 0;
+    let positionValue: number = 0;
+    let equityAtRisk: number = 0;
+    let stopPrice: number = 0;
+    let direction: string | undefined;
 
-      if (
-        availableFunds &&
-        risk &&
-        tradeDirection &&
-        tradePrice &&
-        stopLoss &&
-        stopLossType
-      ) {
-        if (stopLossType === "1") {
-          // Trailing Stop in %
-          if (tradeDirection === "1") {
-            // Long
-            stopPrice = round(tradePrice - tradePrice * (stopLoss / 100));
-          } else {
-            // Short
-            stopPrice = round(tradePrice + tradePrice * (stopLoss / 100));
-          }
-        } else {
-          stopPrice = stopLoss;
-        }
-
+    if (
+      availableFunds &&
+      risk &&
+      tradeDirection &&
+      tradePrice &&
+      stopLoss &&
+      stopLossType
+    ) {
+      if (stopLossType === "1") {
+        // Trailing Stop in %
         if (tradeDirection === "1") {
-          sharesToBuy = Math.floor(
-            (availableFunds * (risk / 100)) / (tradePrice - stopPrice)
-          );
+          direction = "BUY";
+          stopPrice = round(tradePrice - tradePrice * (stopLoss / 100));
         } else {
-          sharesToBuy = Math.floor(
-            (availableFunds * (risk / 100)) / (stopPrice - tradePrice)
-          );
+          direction = "SELL";
+          stopPrice = round(tradePrice + tradePrice * (stopLoss / 100));
         }
-
-        positionValue = round(sharesToBuy * tradePrice);
-
-        if (tradeDirection === "1") {
-          equityAtRisk = round((tradePrice - stopPrice) * sharesToBuy);
-        } else {
-          equityAtRisk = round((stopPrice - tradePrice) * sharesToBuy);
-        }
+      } else {
+        stopPrice = stopLoss;
       }
 
-      setShares(sharesToBuy);
-      setPosition(positionValue);
-      setRiskAmount(equityAtRisk);
-      setStopLossPrice(stopPrice);
+      if (tradeDirection === "1") {
+        sharesToTrade = Math.floor(
+          (availableFunds * (risk / 100)) / (tradePrice - stopPrice)
+        );
+      } else {
+        sharesToTrade = Math.floor(
+          (availableFunds * (risk / 100)) / (stopPrice - tradePrice)
+        );
+      }
 
-      console.log(`finish submit`);
+      positionValue = round(sharesToTrade * tradePrice);
 
-      return { sharesToBuy, positionValue, equityAtRisk, stopPrice };
-    }, 1000);
+      if (tradeDirection === "1") {
+        equityAtRisk = round((tradePrice - stopPrice) * sharesToTrade);
+      } else {
+        equityAtRisk = round((stopPrice - tradePrice) * sharesToTrade);
+      }
+    }
+
+    setShares(sharesToTrade);
+    setPosition(positionValue);
+    setRiskAmount(equityAtRisk);
+    setStopLossPrice(stopPrice);
+    setResultsAvailable(true);
+    availableFunds && setTIA(availableFunds);
+    direction && setTradeDirection(direction);
+    risk && setRiskPercentage(risk);
+
+    return { sharesToTrade, positionValue, equityAtRisk, stopPrice };
   };
-
-  // useEffect(() => {
-  //   if(submitCount) {
-  //     console.log(submitCount);
-  //   }
-
-  // }, [submitCount])
 
   return (
     <Formik
@@ -173,6 +174,7 @@ function CalculateRiskForm(): JSX.Element {
         handleSubmit,
         getFieldProps,
         setFieldValue,
+        values,
         dirty,
         isValid,
       }) => (
@@ -210,6 +212,7 @@ function CalculateRiskForm(): JSX.Element {
                 placeholder="SPY"
                 isInvalid={Boolean(errors.ticker) && touched.ticker}
                 {...getFieldProps("ticker")}
+                disabled
               />
               {Boolean(errors.ticker) && touched.ticker === true ? (
                 <Form.Control.Feedback type="invalid">
@@ -241,6 +244,7 @@ function CalculateRiskForm(): JSX.Element {
                     setFieldValue("getActualPrice", 123);
                     await Promise.resolve();
                   }}
+                  disabled={values.ticker.length === 0}
                 >
                   Get quote
                 </Button>

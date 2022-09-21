@@ -21,6 +21,14 @@ const providerValues = {
   setRiskAmount: jest.fn(),
   stopLossPrice: 0,
   setStopLossPrice: jest.fn(),
+  resultsAvailable: false,
+  setResultsAvailable: jest.fn(),
+  TIA: 0,
+  setTIA: jest.fn(),
+  tradeDirection: '',
+  setTradeDirection: jest.fn(),
+  riskPercentage: 0,
+  setRiskPercentage: jest.fn(),
 };
 
 beforeEach(() => {

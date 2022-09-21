@@ -1,0 +1,54 @@
+.shares {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .shares__direction {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid red;
+    border-radius: 3px;
+    padding: 5px 15px;
+    font-weight: bold;
+    color: red;
+  }
+
+  .shares__units {
+    font-size: 2rem;
+    font-weight: bold;
+    span {
+      font-size: 1.5rem;
+      font-weight: normal;
+    }
+  }
+}
+
+.sl {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 3px;
+  .sl__title {
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  .sl__amount {
+    font-size: 2rem;
+    font-weight: bold;
+    span {
+      font-size: 1.5rem;
+      font-weight: normal;
+    }
+  }
+}
+
+.strike {
+    margin-top: 1.5rem;
+    padding-left: 3px;
+    font-size: small;
+    font-style: italic;
+    span {
+        font-size: medium;
+        font-weight: bold;
+    }
+}

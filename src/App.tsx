@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
@@ -10,9 +10,22 @@ import CalculateRiskForm from "./components/CalculateRiskForm/CalculateRiskForm"
 import CalculateRiskResults from "./components/CalculateRiskResults/CalculateRiskResults";
 
 import "./App.scss";
+import { Button, Modal } from "react-bootstrap";
+import { ResultContext, ResultContextInterface } from "./context/ResultContext";
 
 function App(): JSX.Element {
+  const { resultsAvailable, setResultsAvailable } = useContext(
+    ResultContext
+  ) as ResultContextInterface;
+
   const [loading, setLoading] = useState(true);
+  const [show, setShow] = useState(false);
+
+  const handleClose = (): void => {
+    setResultsAvailable(false)
+    setShow(false)
+  };
+  // const handleShow = (): void => setShow(true);
 
   useEffect(() => {
     // splash screen duration
@@ -20,6 +33,13 @@ function App(): JSX.Element {
       setLoading(false);
     }, 1000);
   }, [loading]);
+
+  useEffect(() => {
+    // show results
+    if (resultsAvailable) {
+      setShow(true);
+    }
+  }, [resultsAvailable]);
 
   return (
     <TransitionGroup>
@@ -42,7 +62,20 @@ function App(): JSX.Element {
               </Row>
               <Row>
                 <Col>
-                  <CalculateRiskResults />
+                  {/* <Button variant="primary" onClick={handleShow}>
+                    Launch demo modal
+                  </Button> */}
+
+                  <Modal show={show} onHide={handleClose}>
+                    <Modal.Body className="p-4">
+                      <CalculateRiskResults />
+                    </Modal.Body>
+                    <Modal.Footer style={{border: 0}}>
+                      <Button variant="secondary" onClick={handleClose}>
+                        Close
+                      </Button>
+                    </Modal.Footer>
+                  </Modal>
                 </Col>
               </Row>
             </Layout>

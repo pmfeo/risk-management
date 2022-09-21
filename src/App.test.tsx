@@ -10,7 +10,30 @@ import App from "./App";
 
 describe("Rendering", () => {
   test("Renders SplashScreen", () => {
-    render(<App />);
+    const providerValues = {
+      shares: 0,
+      setShares: jest.fn(),
+      position: 0,
+      setPosition: jest.fn(),
+      riskAmount: 0,
+      setRiskAmount: jest.fn(),
+      stopLossPrice: 0,
+      setStopLossPrice: jest.fn(),
+      resultsAvailable: false,
+      setResultsAvailable: jest.fn(),
+      TIA: 0,
+      setTIA: jest.fn(),
+      tradeDirection: "",
+      setTradeDirection: jest.fn(),
+      riskPercentage: 0,
+      setRiskPercentage: jest.fn(),
+    };
+
+    render(
+      <ResultContext.Provider value={providerValues}>
+        <App />
+      </ResultContext.Provider>
+    );
     const spinner = screen.getByTestId("spinner");
     expect(spinner).toBeInTheDocument();
   });
@@ -24,6 +47,14 @@ describe("Rendering", () => {
       setRiskAmount: jest.fn(),
       stopLossPrice: 0,
       setStopLossPrice: jest.fn(),
+      resultsAvailable: false,
+      setResultsAvailable: jest.fn(),
+      TIA: 0,
+      setTIA: jest.fn(),
+      tradeDirection: "",
+      setTradeDirection: jest.fn(),
+      riskPercentage: 0,
+      setRiskPercentage: jest.fn(),
     };
 
     render(
