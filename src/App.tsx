@@ -86,10 +86,9 @@ function App(): JSX.Element {
   );
 }
 
-// TODO: results animation
-// TODO: get quote from API
 // TODO: a11y
 // TODO: i18n
+// TODO: add user and login (faunadb?)
 // TODO: add open positions and recalculate available amount
 // TODO: add total risk over available amount
 

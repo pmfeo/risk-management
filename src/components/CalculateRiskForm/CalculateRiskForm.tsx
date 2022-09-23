@@ -1,7 +1,4 @@
-import {
-  // useEffect,
-  useContext,
-} from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
 
@@ -9,11 +6,14 @@ import {
   ResultContextInterface,
   ResultContext,
 } from "../../context/ResultContext";
+
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
+
+const apiKey = process.env.REACT_APP_ALPHA_ADVANTAGE;
 
 const CalculateRiskFormValidationSchema = Yup.object().shape({
   availableFunds: Yup.number()
@@ -22,6 +22,7 @@ const CalculateRiskFormValidationSchema = Yup.object().shape({
   ticker: Yup.string().min(3).max(4),
   getActualPrice: Yup.number(),
   tradePrice: Yup.number()
+    .positive()
     .min(1, "Please enter an amount greater than 0")
     .required("Required"),
   tradeDirection: Yup.string().length(1).required("Required"),
@@ -52,6 +53,7 @@ const initialValues: CalculateRiskFormValues = {
   stopLossType: "1",
 };
 
+// helper
 function round(num: number): number {
   const m = Number((Math.abs(num) * 100).toPrecision(15));
   return (Math.round(m) / 100) * Math.sign(num);
@@ -68,6 +70,48 @@ function CalculateRiskForm(): JSX.Element {
     setTradeDirection,
     setRiskPercentage,
   } = useContext(ResultContext) as ResultContextInterface;
+
+  const [data, setData] = useState<number | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<any>(null);
+  const actualPriceRef = useRef<any>();
+  const tradePriceRef = useRef<any>();
+
+  const handleGetPrice: (arg0: string) => Promise<void> = async (
+    ticker: string
+  ) => {
+    setLoading(true);
+    try {
+      if (apiKey) {
+        const response = await fetch(
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`Error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        const price = result["Global Quote"]["05. price"];
+        setData(parseFloat(price));
+      }
+      return;
+    } catch (err) {
+      console.error(error);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUsePrice: () => void = () => {
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (actualPriceRef.current && tradePriceRef.current) {
+      const getPrice: number = actualPriceRef.current?.getAttribute("value");
+      tradePriceRef?.current?.setAttribute("value", getPrice);
+    }
+  };
 
   const validate: any = (values: any) => {
     interface errorsInterface {
@@ -161,6 +205,10 @@ function CalculateRiskForm(): JSX.Element {
     return { sharesToTrade, positionValue, equityAtRisk, stopPrice };
   };
 
+  useEffect(() => {
+    console.log(`loading`, loading);
+  }, [loading]);
+
   return (
     <Formik
       initialValues={initialValues}
@@ -173,7 +221,6 @@ function CalculateRiskForm(): JSX.Element {
         touched,
         handleSubmit,
         getFieldProps,
-        setFieldValue,
         values,
         dirty,
         isValid,
@@ -189,6 +236,7 @@ function CalculateRiskForm(): JSX.Element {
                 aria-describedby="available-funds"
                 type="number"
                 min="0"
+                step="any"
                 isInvalid={
                   Boolean(errors.availableFunds) && touched.availableFunds
                 }
@@ -205,14 +253,12 @@ function CalculateRiskForm(): JSX.Element {
             </FloatingLabel>
 
             <FloatingLabel controlId="ticker" label="Ticker" className="mb-3">
-              {/* search and retrieve data for price */}
               <Form.Control
                 aria-describedby="ticker"
                 type="text"
                 placeholder="SPY"
                 isInvalid={Boolean(errors.ticker) && touched.ticker}
                 {...getFieldProps("ticker")}
-                disabled
               />
               {Boolean(errors.ticker) && touched.ticker === true ? (
                 <Form.Control.Feedback type="invalid">
@@ -225,14 +271,18 @@ function CalculateRiskForm(): JSX.Element {
               <FloatingLabel
                 as={Col}
                 controlId="get-actual-price"
-                label="Get actual price"
+                // TODO: tooltip with warning icon info
+                // Alert on which price is retrieved, if market is closed, etc
+                label="Actual price"
               >
-                {/* Alert on which price is retrieved, if market is closed, etc */}
                 <Form.Control
                   aria-describedby="get-actual-price"
                   type="number"
                   min="0"
+                  step="any"
                   {...getFieldProps("getActualPrice")}
+                  ref={actualPriceRef}
+                  value={data ?? undefined}
                   placeholder="0"
                   disabled
                 />
@@ -240,13 +290,20 @@ function CalculateRiskForm(): JSX.Element {
               <Col className="align-self-center">
                 <Button
                   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                  onClick={async () => {
-                    setFieldValue("getActualPrice", 123);
-                    await Promise.resolve();
-                  }}
-                  disabled={values.ticker.length === 0}
+                  onClick={async () => await handleGetPrice(values.ticker)}
+                  disabled={
+                    values.ticker.length === 0 ||
+                    (Boolean(errors.ticker) && touched.ticker === true)
+                  }
                 >
                   Get quote
+                </Button>
+                <Button
+                  onClick={handleUsePrice}
+                  disabled={!data}
+                  className="ms-3"
+                >
+                  Use this price
                 </Button>
               </Col>
             </Row>
@@ -260,8 +317,10 @@ function CalculateRiskForm(): JSX.Element {
                 aria-describedby="trade-enter-price"
                 type="number"
                 min="0"
+                step="any"
                 isInvalid={Boolean(errors.tradePrice) && touched.tradePrice}
                 {...getFieldProps("tradePrice")}
+                ref={tradePriceRef}
                 placeholder="0"
               />
               {Boolean(errors.tradePrice) && touched.tradePrice === true ? (
@@ -309,6 +368,7 @@ function CalculateRiskForm(): JSX.Element {
               <Form.Control
                 type="number"
                 min="0"
+                step="any"
                 isInvalid={Boolean(errors.risk) && touched.risk}
                 {...getFieldProps("risk")}
                 placeholder="2%"
@@ -330,6 +390,7 @@ function CalculateRiskForm(): JSX.Element {
                 <Form.Control
                   type="number"
                   min="0"
+                  step="any"
                   isInvalid={Boolean(errors.stopLoss) && touched.stopLoss}
                   {...getFieldProps("stopLoss")}
                   placeholder="0"

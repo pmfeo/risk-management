@@ -30,7 +30,7 @@
         "@typescript-eslint/no-use-before-define": [
             "error"
         ],
-        "@typescript-eslint/strict-boolean-expressions": "warn",
+        "@typescript-eslint/strict-boolean-expressions": "off",
         "react/jsx-filename-extension": [
             "warn",
             {
