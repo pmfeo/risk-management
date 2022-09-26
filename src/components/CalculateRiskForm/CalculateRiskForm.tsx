@@ -1,5 +1,5 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import { Formik } from "formik";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { Formik, useFormikContext } from "formik";
 import * as Yup from "yup";
 
 import {
@@ -12,6 +12,7 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
+import NumberInput from "../NumberInput/NumberInput";
 
 const apiKey = process.env.REACT_APP_ALPHA_ADVANTAGE;
 
@@ -59,6 +60,14 @@ function round(num: number): number {
   return (Math.round(m) / 100) * Math.sign(num);
 }
 
+const FormObserver: React.FC = () => {
+  const { values } = useFormikContext();
+  useEffect(() => {
+    console.log("FormObserver::values", values);
+  }, [values]);
+  return null;
+};
+
 function CalculateRiskForm(): JSX.Element {
   const {
     setShares,
@@ -71,7 +80,9 @@ function CalculateRiskForm(): JSX.Element {
     setRiskPercentage,
   } = useContext(ResultContext) as ResultContextInterface;
 
-  const [data, setData] = useState<number | undefined>(undefined);
+  const [priceFromAPI, setPriceFromAPI] = useState<number | undefined>(
+    undefined
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<any>(null);
   const actualPriceRef = useRef<any>();
@@ -94,7 +105,7 @@ function CalculateRiskForm(): JSX.Element {
 
         const result = await response.json();
         const price = result["Global Quote"]["05. price"];
-        setData(parseFloat(price));
+        setPriceFromAPI(parseFloat(price));
       }
       return;
     } catch (err) {
@@ -102,14 +113,6 @@ function CalculateRiskForm(): JSX.Element {
       setError(err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleUsePrice: () => void = () => {
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (actualPriceRef.current && tradePriceRef.current) {
-      const getPrice: number = actualPriceRef.current?.getAttribute("value");
-      tradePriceRef?.current?.setAttribute("value", getPrice);
     }
   };
 
@@ -205,10 +208,6 @@ function CalculateRiskForm(): JSX.Element {
     return { sharesToTrade, positionValue, equityAtRisk, stopPrice };
   };
 
-  useEffect(() => {
-    console.log(`loading`, loading);
-  }, [loading]);
-
   return (
     <Formik
       initialValues={initialValues}
@@ -221,35 +220,20 @@ function CalculateRiskForm(): JSX.Element {
         touched,
         handleSubmit,
         getFieldProps,
+        setFieldValue,
         values,
         dirty,
         isValid,
       }) => (
         <>
           <Form onSubmit={handleSubmit} data-testid="calculate-form">
+            <FormObserver />
             <FloatingLabel
-              controlId="available-funds"
+              controlId="availableFunds"
               label="Available funds"
               className="mb-3"
             >
-              <Form.Control
-                aria-describedby="available-funds"
-                type="number"
-                min="0"
-                step="any"
-                isInvalid={
-                  Boolean(errors.availableFunds) && touched.availableFunds
-                }
-                {...getFieldProps("availableFunds")}
-                placeholder="0"
-              />
-
-              {Boolean(errors.availableFunds) &&
-              touched.availableFunds === true ? (
-                <Form.Control.Feedback type="invalid">
-                  {errors.availableFunds}
-                </Form.Control.Feedback>
-              ) : null}
+              <NumberInput name="availableFunds" min="0" placeholder="0" />
             </FloatingLabel>
 
             <FloatingLabel controlId="ticker" label="Ticker" className="mb-3">
@@ -282,25 +266,41 @@ function CalculateRiskForm(): JSX.Element {
                   step="any"
                   {...getFieldProps("getActualPrice")}
                   ref={actualPriceRef}
-                  value={data ?? undefined}
+                  value={priceFromAPI ?? undefined}
                   placeholder="0"
                   disabled
                 />
               </FloatingLabel>
               <Col className="align-self-center">
+                {loading ? (
+                  <Button className="btn btn-primary" type="button" disabled>
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    Loading...
+                  </Button>
+                ) : (
+                  <Button
+                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                    onClick={async () => await handleGetPrice(values.ticker)}
+                    disabled={
+                      values.ticker.length === 0 ||
+                      (Boolean(errors.ticker) && touched.ticker === true)
+                    }
+                  >
+                    Get quote
+                  </Button>
+                )}
+
                 <Button
-                  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                  onClick={async () => await handleGetPrice(values.ticker)}
-                  disabled={
-                    values.ticker.length === 0 ||
-                    (Boolean(errors.ticker) && touched.ticker === true)
-                  }
-                >
-                  Get quote
-                </Button>
-                <Button
-                  onClick={handleUsePrice}
-                  disabled={!data}
+                  onClick={() => {
+                    const getPrice: number =
+                      actualPriceRef?.current?.getAttribute("value");
+                    setFieldValue("tradePrice", getPrice);
+                  }}
+                  disabled={!priceFromAPI}
                   className="ms-3"
                 >
                   Use this price
@@ -309,25 +309,16 @@ function CalculateRiskForm(): JSX.Element {
             </Row>
 
             <FloatingLabel
-              controlId="trade-enter-price"
+              controlId="tradePrice"
               label="Trade price"
               className="mb-3"
             >
-              <Form.Control
-                aria-describedby="trade-enter-price"
-                type="number"
+              <NumberInput
+                name="tradePrice"
                 min="0"
-                step="any"
-                isInvalid={Boolean(errors.tradePrice) && touched.tradePrice}
-                {...getFieldProps("tradePrice")}
-                ref={tradePriceRef}
                 placeholder="0"
+                ref={tradePriceRef}
               />
-              {Boolean(errors.tradePrice) && touched.tradePrice === true ? (
-                <Form.Control.Feedback type="invalid">
-                  {errors.tradePrice}
-                </Form.Control.Feedback>
-              ) : null}
             </FloatingLabel>
 
             <Form.Group className="mb-3">
@@ -365,19 +356,7 @@ function CalculateRiskForm(): JSX.Element {
             </Form.Group>
 
             <FloatingLabel controlId="risk" label="Risk" className="mb-3">
-              <Form.Control
-                type="number"
-                min="0"
-                step="any"
-                isInvalid={Boolean(errors.risk) && touched.risk}
-                {...getFieldProps("risk")}
-                placeholder="2%"
-              />
-              {Boolean(errors.risk) && touched.risk === true ? (
-                <Form.Control.Feedback type="invalid">
-                  {errors.risk}
-                </Form.Control.Feedback>
-              ) : null}
+              <NumberInput name="risk" min="0" placeholder="2%" />
             </FloatingLabel>
 
             <Row className="mb-3">
@@ -387,19 +366,7 @@ function CalculateRiskForm(): JSX.Element {
                 label="Stop Loss"
                 className="mb-3"
               >
-                <Form.Control
-                  type="number"
-                  min="0"
-                  step="any"
-                  isInvalid={Boolean(errors.stopLoss) && touched.stopLoss}
-                  {...getFieldProps("stopLoss")}
-                  placeholder="0"
-                />
-                {Boolean(errors.stopLoss) && touched.stopLoss === true ? (
-                  <Form.Control.Feedback type="invalid">
-                    {errors.stopLoss}
-                  </Form.Control.Feedback>
-                ) : null}
+                <NumberInput name="stopLoss" min="0" placeholder="0" />
               </FloatingLabel>
               <Col className="mb-3 align-self-center">
                 <Form.Check
