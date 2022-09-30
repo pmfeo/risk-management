@@ -64,6 +64,7 @@ const FormObserver: React.FC = () => {
   const { values } = useFormikContext();
   useEffect(() => {
     console.log("FormObserver::values", values);
+    // console.log(touched);
   }, [values]);
   return null;
 };
@@ -85,8 +86,17 @@ function CalculateRiskForm(): JSX.Element {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<any>(null);
+
+  const availableFundsRef = useRef<any>();
+  const tickerRef = useRef<any>();
   const actualPriceRef = useRef<any>();
   const tradePriceRef = useRef<any>();
+  const tradeDirection1Ref = useRef<any>();
+  const tradeDirection2Ref = useRef<any>();
+  const riskRef = useRef<any>();
+  const stopLossRef = useRef<any>();
+  const stopLossDirection1Ref = useRef<any>();
+  const stopLossDirection2Ref = useRef<any>();
 
   const handleGetPrice: (arg0: string) => Promise<void> = async (
     ticker: string
@@ -208,8 +218,30 @@ function CalculateRiskForm(): JSX.Element {
     return { sharesToTrade, positionValue, equityAtRisk, stopPrice };
   };
 
+  const handleReset: () => void = () => {
+    availableFundsRef.current.value = undefined;
+    tickerRef.current.value = "";
+    setPriceFromAPI(undefined);
+    actualPriceRef.current.value = undefined;
+    tradePriceRef.current.value = undefined;
+    tradeDirection1Ref.current.checked = true;
+    riskRef.current.value = undefined;
+    stopLossRef.current.value = undefined;
+    stopLossDirection1Ref.current.checked = true;
+  };
+
+  useEffect(() => {
+    if (tradeDirection1Ref.current !== undefined) {
+      tradeDirection1Ref.current.checked = true;
+    }
+    if (stopLossDirection1Ref.current !== undefined) {
+      stopLossDirection1Ref.current.checked = true;
+    }
+  }, []);
+
   return (
     <Formik
+      enableReinitialize
       initialValues={initialValues}
       validationSchema={CalculateRiskFormValidationSchema}
       validate={validate}
@@ -218,26 +250,34 @@ function CalculateRiskForm(): JSX.Element {
       {({
         errors,
         touched,
-        handleSubmit,
-        getFieldProps,
-        setFieldValue,
         values,
         dirty,
         isValid,
+        handleSubmit,
+        getFieldProps,
+        setFieldValue,
+        resetForm,
       }) => (
         <>
           <Form onSubmit={handleSubmit} data-testid="calculate-form">
             <FormObserver />
+
             <FloatingLabel
               controlId="availableFunds"
               label="Available funds"
               className="mb-3"
             >
-              <NumberInput name="availableFunds" min="0" placeholder="0" />
+              <NumberInput
+                ref={availableFundsRef}
+                name="availableFunds"
+                min="0"
+                placeholder="0"
+              />
             </FloatingLabel>
 
             <FloatingLabel controlId="ticker" label="Ticker" className="mb-3">
               <Form.Control
+                ref={tickerRef}
                 aria-describedby="ticker"
                 type="text"
                 placeholder="SPY"
@@ -259,15 +299,12 @@ function CalculateRiskForm(): JSX.Element {
                 // Alert on which price is retrieved, if market is closed, etc
                 label="Actual price"
               >
-                <Form.Control
-                  aria-describedby="get-actual-price"
-                  type="number"
-                  min="0"
-                  step="any"
-                  {...getFieldProps("getActualPrice")}
+                <NumberInput
                   ref={actualPriceRef}
-                  value={priceFromAPI ?? undefined}
+                  name="getActualPrice"
+                  min="0"
                   placeholder="0"
+                  value={priceFromAPI ?? undefined}
                   disabled
                 />
               </FloatingLabel>
@@ -314,10 +351,10 @@ function CalculateRiskForm(): JSX.Element {
               className="mb-3"
             >
               <NumberInput
+                ref={tradePriceRef}
                 name="tradePrice"
                 min="0"
                 placeholder="0"
-                ref={tradePriceRef}
               />
             </FloatingLabel>
 
@@ -326,6 +363,7 @@ function CalculateRiskForm(): JSX.Element {
                 Trade Direction
               </Form.Label>
               <Form.Check
+                ref={tradeDirection1Ref}
                 inline
                 id="radio-1"
                 label="Long"
@@ -337,6 +375,7 @@ function CalculateRiskForm(): JSX.Element {
                 value="1"
               />
               <Form.Check
+                ref={tradeDirection2Ref}
                 inline
                 id="radio-2"
                 label="Short"
@@ -356,7 +395,7 @@ function CalculateRiskForm(): JSX.Element {
             </Form.Group>
 
             <FloatingLabel controlId="risk" label="Risk" className="mb-3">
-              <NumberInput name="risk" min="0" placeholder="2%" />
+              <NumberInput ref={riskRef} name="risk" min="0" placeholder="2%" />
             </FloatingLabel>
 
             <Row className="mb-3">
@@ -366,10 +405,16 @@ function CalculateRiskForm(): JSX.Element {
                 label="Stop Loss"
                 className="mb-3"
               >
-                <NumberInput name="stopLoss" min="0" placeholder="0" />
+                <NumberInput
+                  ref={stopLossRef}
+                  name="stopLoss"
+                  min="0"
+                  placeholder="0"
+                />
               </FloatingLabel>
               <Col className="mb-3 align-self-center">
                 <Form.Check
+                  ref={stopLossDirection1Ref}
                   inline
                   id="radio-1"
                   type="radio"
@@ -381,6 +426,7 @@ function CalculateRiskForm(): JSX.Element {
                   value="1"
                 />
                 <Form.Check
+                  ref={stopLossDirection2Ref}
                   inline
                   id="radio-2"
                   type="radio"
@@ -402,6 +448,21 @@ function CalculateRiskForm(): JSX.Element {
                 disabled={!(isValid && dirty)}
               >
                 Calculate
+              </Button>
+            </div>
+
+            <div className="d-grid gap-2 mt-3">
+              <Button
+                variant="secondary"
+                size="lg"
+                type="button"
+                disabled={!touched}
+                onClick={() => {
+                  resetForm();
+                  handleReset();
+                }}
+              >
+                Reset Form
               </Button>
             </div>
           </Form>
