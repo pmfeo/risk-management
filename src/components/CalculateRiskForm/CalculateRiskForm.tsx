@@ -275,12 +275,9 @@ function CalculateRiskForm(): JSX.Element {
               />
             </FloatingLabel>
 
-
-
             <Row>
               <Col md={4} className="mb-3">
-                <FloatingLabel
-                  controlId="ticker" label="Ticker">
+                <FloatingLabel controlId="ticker" label="Ticker">
                   <Form.Control
                     ref={tickerRef}
                     aria-describedby="ticker"
@@ -298,7 +295,6 @@ function CalculateRiskForm(): JSX.Element {
               </Col>
 
               <Col md={4} className="mb-3">
-
                 <FloatingLabel
                   as={Col}
                   controlId="get-actual-price"
@@ -372,7 +368,13 @@ function CalculateRiskForm(): JSX.Element {
               </FloatingLabel>
 
               <ButtonGroup size="lg" className="mb-3 col-md-6">
-                <Button>
+                <Button
+                  className={
+                    tradeDirection1Ref?.current?.checked === true
+                      ? "active"
+                      : ""
+                  }
+                >
                   <Form.Check
                     ref={tradeDirection1Ref}
                     inline
@@ -386,7 +388,13 @@ function CalculateRiskForm(): JSX.Element {
                     value="1"
                   />
                 </Button>
-                <Button>
+                <Button
+                  className={
+                    tradeDirection2Ref?.current?.checked === true
+                      ? "active"
+                      : ""
+                  }
+                >
                   <Form.Check
                     ref={tradeDirection2Ref}
                     inline
@@ -401,7 +409,7 @@ function CalculateRiskForm(): JSX.Element {
                   />
                 </Button>
                 {Boolean(errors.tradeDirection) &&
-                  touched.tradeDirection === true ? (
+                touched.tradeDirection === true ? (
                   <Form.Control.Feedback type="invalid">
                     {errors.tradeDirection}
                   </Form.Control.Feedback>
@@ -428,7 +436,13 @@ function CalculateRiskForm(): JSX.Element {
                 />
               </FloatingLabel>
               <ButtonGroup size="lg" className="mb-3 col-md-6">
-                <Button>
+                <Button
+                  className={
+                    stopLossDirection1Ref?.current?.checked === true
+                      ? "active"
+                      : ""
+                  }
+                >
                   <Form.Check
                     ref={stopLossDirection1Ref}
                     inline
@@ -442,7 +456,13 @@ function CalculateRiskForm(): JSX.Element {
                     value="1"
                   />
                 </Button>
-                <Button>
+                <Button
+                  className={
+                    stopLossDirection2Ref?.current?.checked === true
+                      ? "active"
+                      : ""
+                  }
+                >
                   <Form.Check
                     ref={stopLossDirection2Ref}
                     inline
@@ -456,12 +476,8 @@ function CalculateRiskForm(): JSX.Element {
                     value="2"
                   />
                 </Button>
-
               </ButtonGroup>
-
             </Row>
-
-
 
             <Row className="mt-3">
               <Col className="col-md-8">
@@ -475,7 +491,6 @@ function CalculateRiskForm(): JSX.Element {
                     Calculate
                   </Button>
                 </div>
-
               </Col>
               <Col>
                 <div className="d-grid gap-2">
@@ -494,35 +509,6 @@ function CalculateRiskForm(): JSX.Element {
                 </div>
               </Col>
             </Row>
-
-
-            {/* <div className="d-grid gap-2">
-              <Button
-                variant="primary"
-                size="lg"
-                type="submit"
-                disabled={!(isValid && dirty)}
-              >
-                Calculate
-              </Button>
-            </div> */}
-
-
-
-            {/* <div className="d-grid gap-2 mt-3">
-              <Button
-                variant="secondary"
-                size="lg"
-                type="button"
-                disabled={!touched}
-                onClick={() => {
-                  resetForm();
-                  handleReset();
-                }}
-              >
-                Reset Form
-              </Button>
-            </div> */}
           </Form>
         </>
       )}

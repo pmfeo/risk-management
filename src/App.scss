@@ -34,18 +34,24 @@ input[type="number"] {
 }
 
 // hide radio as we are styling a button group on top
-.form-check {
-  cursor: pointer;
+.form-check-input[type="radio"] {
+  // visibility: hidden;
   position: absolute;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
 }
-.form-check-input[type="radio"] {
-  visibility: hidden;
+
+.form-check-input:checked[type="radio"] {
+  background-image: unset;
 }
 
 .form-check.form-check-inline {
