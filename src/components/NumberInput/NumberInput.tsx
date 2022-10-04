@@ -14,6 +14,7 @@ const NumberInput = React.forwardRef<Ref, Props>((props, ref) => {
   return (
     <>
       <Form.Control
+        className={'form-control-sm'}
         aria-describedby={field.name}
         type="number"
         step="any"

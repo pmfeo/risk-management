@@ -56,16 +56,12 @@ function App(): JSX.Element {
               </Row>
               <Row>
                 <Col>
-                  <h2>Enter your trade info below</h2>
+                  <h2 className="fs-5">Enter your trade info below</h2>
                   <CalculateRiskForm />
                 </Col>
               </Row>
               <Row>
                 <Col>
-                  {/* <Button variant="primary" onClick={handleShow}>
-                    Launch demo modal
-                  </Button> */}
-
                   <Modal show={show} onHide={handleClose}>
                     <Modal.Body className="p-4">
                       <CalculateRiskResults />
@@ -86,6 +82,7 @@ function App(): JSX.Element {
   );
 }
 
+// TODO: split calc logic from form component
 // TODO: a11y
 // TODO: i18n
 // TODO: add user and login (faunadb?)

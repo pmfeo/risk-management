@@ -28,6 +28,31 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+.btn-group .btn {
+  flex-basis: 50%;
+  position: relative;
+}
+
+// hide radio as we are styling a button group on top
+.form-check {
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+.form-check-input[type="radio"] {
+  visibility: hidden;
+}
+
+.form-check.form-check-inline {
+  margin: 0;
+  padding: 0;
+}
+
 // splash and main transition
 .item-enter {
   opacity: 0;

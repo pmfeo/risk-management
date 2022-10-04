@@ -10,6 +10,7 @@ import {
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
+import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Form from "react-bootstrap/Form";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
 import NumberInput from "../NumberInput/NumberInput";
@@ -64,7 +65,6 @@ const FormObserver: React.FC = () => {
   const { values } = useFormikContext();
   useEffect(() => {
     console.log("FormObserver::values", values);
-    // console.log(touched);
   }, [values]);
   return null;
 };
@@ -275,42 +275,52 @@ function CalculateRiskForm(): JSX.Element {
               />
             </FloatingLabel>
 
-            <FloatingLabel controlId="ticker" label="Ticker" className="mb-3">
-              <Form.Control
-                ref={tickerRef}
-                aria-describedby="ticker"
-                type="text"
-                placeholder="SPY"
-                isInvalid={Boolean(errors.ticker) && touched.ticker}
-                {...getFieldProps("ticker")}
-              />
-              {Boolean(errors.ticker) && touched.ticker === true ? (
-                <Form.Control.Feedback type="invalid">
-                  {errors.ticker}
-                </Form.Control.Feedback>
-              ) : null}
-            </FloatingLabel>
 
-            <Row className="mb-3">
-              <FloatingLabel
-                as={Col}
-                controlId="get-actual-price"
-                // TODO: tooltip with warning icon info
-                // Alert on which price is retrieved, if market is closed, etc
-                label="Actual price"
-              >
-                <NumberInput
-                  ref={actualPriceRef}
-                  name="getActualPrice"
-                  min="0"
-                  placeholder="0"
-                  value={priceFromAPI ?? undefined}
-                  disabled
-                />
-              </FloatingLabel>
-              <Col className="align-self-center">
+
+            <Row>
+              <Col md={4} className="mb-3">
+                <FloatingLabel
+                  controlId="ticker" label="Ticker">
+                  <Form.Control
+                    ref={tickerRef}
+                    aria-describedby="ticker"
+                    type="text"
+                    placeholder="SPY"
+                    isInvalid={Boolean(errors.ticker) && touched.ticker}
+                    {...getFieldProps("ticker")}
+                  />
+                  {Boolean(errors.ticker) && touched.ticker === true ? (
+                    <Form.Control.Feedback type="invalid">
+                      {errors.ticker}
+                    </Form.Control.Feedback>
+                  ) : null}
+                </FloatingLabel>
+              </Col>
+
+              <Col md={4} className="mb-3">
+
+                <FloatingLabel
+                  as={Col}
+                  controlId="get-actual-price"
+                  // TODO: tooltip with warning icon info
+                  // Alert on which price is retrieved, if market is closed, etc
+                  label="Actual price"
+                >
+                  <NumberInput
+                    ref={actualPriceRef}
+                    name="getActualPrice"
+                    min="0"
+                    placeholder="0"
+                    value={priceFromAPI ?? undefined}
+                    disabled
+                    readonly
+                  />
+                </FloatingLabel>
+              </Col>
+
+              <Col className="d-flex justify-content-center justify-content-md-end align-items-center mb-3">
                 {loading ? (
-                  <Button className="btn btn-primary" type="button" disabled>
+                  <Button className="btn-lg" disabled>
                     <span
                       className="spinner-border spinner-border-sm me-2"
                       role="status"
@@ -326,6 +336,7 @@ function CalculateRiskForm(): JSX.Element {
                       values.ticker.length === 0 ||
                       (Boolean(errors.ticker) && touched.ticker === true)
                     }
+                    className="btn-lg"
                   >
                     Get quote
                   </Button>
@@ -338,72 +349,76 @@ function CalculateRiskForm(): JSX.Element {
                     setFieldValue("tradePrice", getPrice);
                   }}
                   disabled={!priceFromAPI}
-                  className="ms-3"
+                  className="btn-lg ms-3"
                 >
                   Use this price
                 </Button>
               </Col>
             </Row>
 
-            <FloatingLabel
-              controlId="tradePrice"
-              label="Trade price"
-              className="mb-3"
-            >
-              <NumberInput
-                ref={tradePriceRef}
-                name="tradePrice"
-                min="0"
-                placeholder="0"
-              />
-            </FloatingLabel>
+            <Row className="align-items-center">
+              <FloatingLabel
+                as={Col}
+                controlId="tradePrice"
+                label="Trade price"
+                className="mb-3 col-md-6"
+              >
+                <NumberInput
+                  ref={tradePriceRef}
+                  name="tradePrice"
+                  min="0"
+                  placeholder="0"
+                />
+              </FloatingLabel>
 
-            <Form.Group className="mb-3">
-              <Form.Label className="me-3" style={{ paddingLeft: "0.75rem" }}>
-                Trade Direction
-              </Form.Label>
-              <Form.Check
-                ref={tradeDirection1Ref}
-                inline
-                id="radio-1"
-                label="Long"
-                type="radio"
-                isInvalid={
-                  Boolean(errors.tradeDirection) && touched.tradeDirection
-                }
-                {...getFieldProps("tradeDirection")}
-                value="1"
-              />
-              <Form.Check
-                ref={tradeDirection2Ref}
-                inline
-                id="radio-2"
-                label="Short"
-                type="radio"
-                isInvalid={
-                  Boolean(errors.tradeDirection) && touched.tradeDirection
-                }
-                {...getFieldProps("tradeDirection")}
-                value="2"
-              />
-              {Boolean(errors.tradeDirection) &&
-              touched.tradeDirection === true ? (
-                <Form.Control.Feedback type="invalid">
-                  {errors.tradeDirection}
-                </Form.Control.Feedback>
-              ) : null}
-            </Form.Group>
+              <ButtonGroup size="lg" className="mb-3 col-md-6">
+                <Button>
+                  <Form.Check
+                    ref={tradeDirection1Ref}
+                    inline
+                    id="radio-1"
+                    label="Long"
+                    type="radio"
+                    isInvalid={
+                      Boolean(errors.tradeDirection) && touched.tradeDirection
+                    }
+                    {...getFieldProps("tradeDirection")}
+                    value="1"
+                  />
+                </Button>
+                <Button>
+                  <Form.Check
+                    ref={tradeDirection2Ref}
+                    inline
+                    id="radio-2"
+                    label="Short"
+                    type="radio"
+                    isInvalid={
+                      Boolean(errors.tradeDirection) && touched.tradeDirection
+                    }
+                    {...getFieldProps("tradeDirection")}
+                    value="2"
+                  />
+                </Button>
+                {Boolean(errors.tradeDirection) &&
+                  touched.tradeDirection === true ? (
+                  <Form.Control.Feedback type="invalid">
+                    {errors.tradeDirection}
+                  </Form.Control.Feedback>
+                ) : null}
+              </ButtonGroup>
+            </Row>
 
             <FloatingLabel controlId="risk" label="Risk" className="mb-3">
               <NumberInput ref={riskRef} name="risk" min="0" placeholder="2%" />
             </FloatingLabel>
 
-            <Row className="mb-3">
+            <Row className="align-items-center">
               <FloatingLabel
                 as={Col}
                 controlId="stopLoss"
                 label="Stop Loss"
-                className="mb-3"
+                className="mb-3 col-md-6"
               >
                 <NumberInput
                   ref={stopLossRef}
@@ -412,35 +427,76 @@ function CalculateRiskForm(): JSX.Element {
                   placeholder="0"
                 />
               </FloatingLabel>
-              <Col className="mb-3 align-self-center">
-                <Form.Check
-                  ref={stopLossDirection1Ref}
-                  inline
-                  id="radio-1"
-                  type="radio"
-                  label="TS%"
-                  isInvalid={
-                    Boolean(errors.stopLossType) && touched.stopLossType
-                  }
-                  {...getFieldProps("stopLossType")}
-                  value="1"
-                />
-                <Form.Check
-                  ref={stopLossDirection2Ref}
-                  inline
-                  id="radio-2"
-                  type="radio"
-                  label="Fixed price"
-                  isInvalid={
-                    Boolean(errors.stopLossType) && touched.stopLossType
-                  }
-                  {...getFieldProps("stopLossType")}
-                  value="2"
-                />
+              <ButtonGroup size="lg" className="mb-3 col-md-6">
+                <Button>
+                  <Form.Check
+                    ref={stopLossDirection1Ref}
+                    inline
+                    id="radio-3"
+                    type="radio"
+                    label="TS%"
+                    isInvalid={
+                      Boolean(errors.stopLossType) && touched.stopLossType
+                    }
+                    {...getFieldProps("stopLossType")}
+                    value="1"
+                  />
+                </Button>
+                <Button>
+                  <Form.Check
+                    ref={stopLossDirection2Ref}
+                    inline
+                    id="radio-4"
+                    type="radio"
+                    label="Fixed price"
+                    isInvalid={
+                      Boolean(errors.stopLossType) && touched.stopLossType
+                    }
+                    {...getFieldProps("stopLossType")}
+                    value="2"
+                  />
+                </Button>
+
+              </ButtonGroup>
+
+            </Row>
+
+
+
+            <Row className="mt-3">
+              <Col className="col-md-8">
+                <div className="d-grid gap-2">
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    type="submit"
+                    disabled={!(isValid && dirty)}
+                  >
+                    Calculate
+                  </Button>
+                </div>
+
+              </Col>
+              <Col>
+                <div className="d-grid gap-2">
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    type="button"
+                    disabled={!touched}
+                    onClick={() => {
+                      resetForm();
+                      handleReset();
+                    }}
+                  >
+                    Reset Form
+                  </Button>
+                </div>
               </Col>
             </Row>
 
-            <div className="d-grid gap-2">
+
+            {/* <div className="d-grid gap-2">
               <Button
                 variant="primary"
                 size="lg"
@@ -449,9 +505,11 @@ function CalculateRiskForm(): JSX.Element {
               >
                 Calculate
               </Button>
-            </div>
+            </div> */}
 
-            <div className="d-grid gap-2 mt-3">
+
+
+            {/* <div className="d-grid gap-2 mt-3">
               <Button
                 variant="secondary"
                 size="lg"
@@ -464,7 +522,7 @@ function CalculateRiskForm(): JSX.Element {
               >
                 Reset Form
               </Button>
-            </div>
+            </div> */}
           </Form>
         </>
       )}
