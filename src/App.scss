@@ -51,7 +51,7 @@ input[type="number"] {
 }
 
 .form-check-input:checked[type="radio"] {
-  background-image: unset;
+  opacity: 0;
 }
 
 .form-check.form-check-inline {

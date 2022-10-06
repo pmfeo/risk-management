@@ -85,7 +85,6 @@ function CalculateRiskForm(): JSX.Element {
     undefined
   );
   const [loading, setLoading] = useState(false);
-  // const [error, setError] = useState<any>(null);
 
   const availableFundsRef = useRef<any>();
   const tickerRef = useRef<any>();
@@ -103,8 +102,8 @@ function CalculateRiskForm(): JSX.Element {
   ) => {
     setLoading(true);
     try {
-      const price = await getQuotePrice(ticker)
-      setPriceFromAPI(parseFloat(price))
+      const price = await getQuotePrice(ticker);
+      setPriceFromAPI(parseFloat(price));
     } catch (err) {
       console.error(err);
       setError(JSON.stringify(err));
@@ -175,7 +174,6 @@ function CalculateRiskForm(): JSX.Element {
       stopLoss &&
       stopLossType
     ) {
-      // ESTE CALCULO ESTA OK
       if (stopLossType === "1") {
         // Trailing Stop in %
         if (tradeDirection === "1") {
@@ -215,7 +213,7 @@ function CalculateRiskForm(): JSX.Element {
 
     if (sharesToTrade < 1) {
       setError(
-        "Not enough to buy at least 1 share with the given parameters. Please perform another calculation with different ones."
+        "Not enough to trade at least 1 share with the given parameters. Please perform another calculation with different ones."
       );
     } else {
       setError("");
@@ -423,7 +421,7 @@ function CalculateRiskForm(): JSX.Element {
                   />
                 </Button>
                 {Boolean(errors.tradeDirection) &&
-                  touched.tradeDirection === true ? (
+                touched.tradeDirection === true ? (
                   <Form.Control.Feedback type="invalid">
                     {errors.tradeDirection}
                   </Form.Control.Feedback>
