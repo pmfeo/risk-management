@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Formik, useFormikContext } from "formik";
 import * as Yup from "yup";
+import { getQuotePrice } from "../../services/getQuotePrice.service";
 
 import {
   ResultContextInterface,
@@ -14,8 +15,6 @@ import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Form from "react-bootstrap/Form";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
 import NumberInput from "../NumberInput/NumberInput";
-
-const apiKey = process.env.REACT_APP_ALPHA_ADVANTAGE;
 
 const CalculateRiskFormValidationSchema = Yup.object().shape({
   availableFunds: Yup.number()
@@ -33,7 +32,7 @@ const CalculateRiskFormValidationSchema = Yup.object().shape({
   stopLossType: Yup.string().length(1).required("Required"),
 });
 
-interface CalculateRiskFormValues {
+interface ICalculateRiskFormValues {
   availableFunds: number | undefined;
   ticker: string;
   getActualPrice: number | undefined;
@@ -44,7 +43,7 @@ interface CalculateRiskFormValues {
   stopLossType: string | undefined;
 }
 
-const initialValues: CalculateRiskFormValues = {
+const initialValues: ICalculateRiskFormValues = {
   availableFunds: undefined,
   ticker: "",
   getActualPrice: undefined,
@@ -104,21 +103,8 @@ function CalculateRiskForm(): JSX.Element {
   ) => {
     setLoading(true);
     try {
-      if (apiKey) {
-        const response = await fetch(
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`
-        );
-
-        if (!response.ok) {
-          throw new Error(`Error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        const price = result["Global Quote"]["05. price"];
-        setPriceFromAPI(parseFloat(price));
-      }
-      return;
+      const price = await getQuotePrice(ticker)
+      setPriceFromAPI(parseFloat(price))
     } catch (err) {
       console.error(err);
       setError(JSON.stringify(err));
@@ -165,7 +151,7 @@ function CalculateRiskForm(): JSX.Element {
     return errors;
   };
 
-  const onSubmit: any = (values: CalculateRiskFormValues) => {
+  const onSubmit: any = (values: ICalculateRiskFormValues) => {
     const {
       availableFunds,
       risk,
@@ -437,7 +423,7 @@ function CalculateRiskForm(): JSX.Element {
                   />
                 </Button>
                 {Boolean(errors.tradeDirection) &&
-                touched.tradeDirection === true ? (
+                  touched.tradeDirection === true ? (
                   <Form.Control.Feedback type="invalid">
                     {errors.tradeDirection}
                   </Form.Control.Feedback>
