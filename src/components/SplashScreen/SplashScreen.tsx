@@ -10,9 +10,14 @@ function SplashScreen(): JSX.Element {
     <Container className={`${styles["full-centered"]} text-bg-primary`} fluid>
       <Row>
         <Col>
-          <div className="mb-3 text-capitalize fs-1 fw-bold fst-italic">
+          <div className="mb-3 text-capitalize fs-3 fw-bold fst-italic">
             Risk Management
-            </div>
+            <br />
+            <span className="fs-1">
+
+            Trade Position Calculator
+            </span>
+          </div>
           <Spinner animation="border" data-testid="spinner" />
         </Col>
       </Row>

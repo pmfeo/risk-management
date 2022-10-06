@@ -1,7 +1,8 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
-import { Formik, useFormikContext } from "formik";
+import { useContext, useEffect, useRef, useState } from "react";
+import { Formik } from "formik";
 import * as Yup from "yup";
 import { getQuotePrice } from "../../services/getQuotePrice.service";
+import calculatePosition from "../../utilities/calculatePosition";
 
 import {
   ResultContextInterface,
@@ -15,6 +16,7 @@ import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Form from "react-bootstrap/Form";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
 import NumberInput from "../NumberInput/NumberInput";
+import ICalculateRiskFormValues from "../../interfaces/ICalculateRiskFormValues.interface";
 
 const CalculateRiskFormValidationSchema = Yup.object().shape({
   availableFunds: Yup.number()
@@ -32,17 +34,6 @@ const CalculateRiskFormValidationSchema = Yup.object().shape({
   stopLossType: Yup.string().length(1).required("Required"),
 });
 
-interface ICalculateRiskFormValues {
-  availableFunds: number | undefined;
-  ticker: string;
-  getActualPrice: number | undefined;
-  risk: number | undefined;
-  tradeDirection: string;
-  tradePrice: number | undefined;
-  stopLoss: number | undefined;
-  stopLossType: string | undefined;
-}
-
 const initialValues: ICalculateRiskFormValues = {
   availableFunds: undefined,
   ticker: "",
@@ -52,20 +43,6 @@ const initialValues: ICalculateRiskFormValues = {
   tradePrice: undefined,
   stopLoss: undefined,
   stopLossType: "1",
-};
-
-// helper
-function round(num: number): number {
-  const m = Number((Math.abs(num) * 100).toPrecision(15));
-  return (Math.round(m) / 100) * Math.sign(num);
-}
-
-const FormObserver: React.FC = () => {
-  const { values } = useFormikContext();
-  useEffect(() => {
-    console.log("FormObserver::values", values);
-  }, [values]);
-  return null;
 };
 
 function CalculateRiskForm(): JSX.Element {
@@ -150,7 +127,7 @@ function CalculateRiskForm(): JSX.Element {
     return errors;
   };
 
-  const onSubmit: any = (values: ICalculateRiskFormValues) => {
+  const onSubmit: (values: ICalculateRiskFormValues) => void = (values) => {
     const {
       availableFunds,
       risk,
@@ -160,56 +137,26 @@ function CalculateRiskForm(): JSX.Element {
       stopLossType,
     } = values;
 
-    let sharesToTrade: number = 0;
-    let positionValue: number = 0;
-    let equityAtRisk: number = 0;
-    let stopPrice: number = 0;
-    let direction: string | undefined;
-
     if (
-      availableFunds &&
-      risk &&
-      tradeDirection &&
-      tradePrice &&
-      stopLoss &&
-      stopLossType
+      !availableFunds ||
+      !risk ||
+      !tradeDirection ||
+      !tradePrice ||
+      !stopLoss ||
+      !stopLossType
     ) {
-      if (stopLossType === "1") {
-        // Trailing Stop in %
-        if (tradeDirection === "1") {
-          direction = "BUY";
-          stopPrice = round(tradePrice - tradePrice * (stopLoss / 100));
-        } else {
-          direction = "SELL";
-          stopPrice = round(tradePrice + tradePrice * (stopLoss / 100));
-        }
-      } else {
-        stopPrice = stopLoss;
-      }
-
-      if (tradeDirection === "1") {
-        sharesToTrade = Math.floor(
-          (availableFunds * (risk / 100)) / (tradePrice - stopPrice)
-        );
-      } else {
-        sharesToTrade = Math.floor(
-          (availableFunds * (risk / 100)) / (stopPrice - tradePrice)
-        );
-      }
-
-      positionValue = round(sharesToTrade * tradePrice);
-
-      if (tradeDirection === "1") {
-        equityAtRisk = round((tradePrice - stopPrice) * sharesToTrade);
-      } else {
-        equityAtRisk = round((stopPrice - tradePrice) * sharesToTrade);
-      }
+      return;
     }
 
-    console.log(`sharesToTrade`, sharesToTrade);
-    console.log(`positionValue`, positionValue);
-    console.log(`equityAtRisk`, equityAtRisk);
-    console.log(`stopPrice`, stopPrice);
+    const { sharesToTrade, positionValue, equityAtRisk, stopPrice, direction } =
+      calculatePosition({
+        availableFunds,
+        risk,
+        tradeDirection,
+        tradePrice,
+        stopLoss,
+        stopLossType,
+      });
 
     if (sharesToTrade < 1) {
       setError(
@@ -227,8 +174,6 @@ function CalculateRiskForm(): JSX.Element {
     availableFunds && setTIA(availableFunds);
     direction && setTradeDirection(direction);
     risk && setRiskPercentage(risk);
-
-    return { sharesToTrade, positionValue, equityAtRisk, stopPrice };
   };
 
   const handleReset: () => void = () => {
@@ -273,11 +218,9 @@ function CalculateRiskForm(): JSX.Element {
       }) => (
         <>
           <Form onSubmit={handleSubmit} data-testid="calculate-form">
-            <FormObserver />
-
             <FloatingLabel
               controlId="availableFunds"
-              label="Available funds"
+              label="Total Investable Amount (Available funds)"
               className="mb-3"
             >
               <NumberInput
@@ -339,9 +282,11 @@ function CalculateRiskForm(): JSX.Element {
                 ) : (
                   <Button
                     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                    onClick={async () => await handleGetPrice(values.ticker)}
+                    onClick={async () =>
+                      values?.ticker && (await handleGetPrice(values.ticker))
+                    }
                     disabled={
-                      values.ticker.length === 0 ||
+                      values?.ticker?.length === 0 ||
                       (Boolean(errors.ticker) && touched.ticker === true)
                     }
                     className="btn-lg"

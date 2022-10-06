@@ -19,25 +19,23 @@ function App(): JSX.Element {
   ) as ResultContextInterface;
 
   const [loading, setLoading] = useState(true);
-  const [show, setShow] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   const handleClose = (): void => {
     setResultsAvailable(false)
-    setShow(false)
+    setShowResults(false)
   };
-  // const handleShow = (): void => setShow(true);
 
   useEffect(() => {
     // splash screen duration
     setTimeout(() => {
       setLoading(false);
-    }, 1000);
+    }, 1500);
   }, [loading]);
 
   useEffect(() => {
-    // show results
     if (resultsAvailable) {
-      setShow(true);
+      setShowResults(true);
     }
   }, [resultsAvailable]);
 
@@ -51,7 +49,7 @@ function App(): JSX.Element {
             <Layout>
               <Row>
                 <Col>
-                  <h1 className="mb-3 mt-3 text-center">Risk Management</h1>
+                  <h1 className="mb-3 mt-3 text-center">Trade Position Calculator</h1>
                 </Col>
               </Row>
               <Row>
@@ -62,7 +60,7 @@ function App(): JSX.Element {
               </Row>
               <Row>
                 <Col>
-                  <Modal show={show} onHide={handleClose}>
+                  <Modal show={showResults} onHide={handleClose}>
                     <Modal.Body className="p-4">
                       <CalculateRiskResults />
                     </Modal.Body>
