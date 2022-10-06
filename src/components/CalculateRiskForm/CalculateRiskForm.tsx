@@ -63,7 +63,7 @@ function round(num: number): number {
 const FormObserver: React.FC = () => {
   const { values } = useFormikContext();
   useEffect(() => {
-    // console.log("FormObserver::values", values);
+    console.log("FormObserver::values", values);
   }, [values]);
   return null;
 };
@@ -129,11 +129,11 @@ function CalculateRiskForm(): JSX.Element {
 
     if (stopLossType === "2" && tradePrice && stopLoss) {
       // Fixed price SL
-      if (tradeDirection === "1" && tradePrice < stopLoss) {
+      if (tradeDirection === "1" && tradePrice <= stopLoss) {
         // Long
         errors.stopLoss = "Stop Price must be smaller than Trade Price";
       }
-      if (tradeDirection === "2" && tradePrice > stopLoss) {
+      if (tradeDirection === "2" && tradePrice >= stopLoss) {
         // Short
         errors.stopLoss = "Stop Price must be greater than Trade Price";
       }
