@@ -29,6 +29,8 @@ const providerValues = {
   setTradeDirection: jest.fn(),
   riskPercentage: 0,
   setRiskPercentage: jest.fn(),
+  error: '',
+  setError: jest.fn(),
 };
 
 beforeEach(() => {

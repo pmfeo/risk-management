@@ -23,6 +23,8 @@ describe("Rendering", () => {
       setTradeDirection: jest.fn(),
       riskPercentage: 0,
       setRiskPercentage: jest.fn(),
+      error: '',
+      setError: jest.fn(),
     };
 
     render(
@@ -53,6 +55,8 @@ describe("Rendering", () => {
       setTradeDirection: jest.fn(),
       riskPercentage: 0,
       setRiskPercentage: jest.fn(),
+      error: '',
+      setError: jest.fn(),
     };
 
     render(

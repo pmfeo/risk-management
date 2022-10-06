@@ -18,6 +18,8 @@ export interface ResultContextInterface {
   setTradeDirection: React.Dispatch<React.SetStateAction<string>>;
   riskPercentage: number;
   setRiskPercentage: React.Dispatch<React.SetStateAction<number>>;
+  error: string;
+  setError: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface Props {
@@ -35,6 +37,9 @@ const ResultProvider = ({ children }: Props): JSX.Element => {
   const [TIA, setTIA] = useState(0);
   const [tradeDirection, setTradeDirection] = useState('');
   const [riskPercentage, setRiskPercentage] = useState(0);
+  
+  const [error, setError] = useState('');
+  
   return (
     <ResultContext.Provider
       value={{
@@ -54,6 +59,7 @@ const ResultProvider = ({ children }: Props): JSX.Element => {
         setTradeDirection,
         riskPercentage,
         setRiskPercentage,
+        error, setError
       }}
     >
       {children}

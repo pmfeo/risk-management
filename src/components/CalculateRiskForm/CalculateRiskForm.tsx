@@ -64,7 +64,7 @@ function round(num: number): number {
 const FormObserver: React.FC = () => {
   const { values } = useFormikContext();
   useEffect(() => {
-    console.log("FormObserver::values", values);
+    // console.log("FormObserver::values", values);
   }, [values]);
   return null;
 };
@@ -79,13 +79,14 @@ function CalculateRiskForm(): JSX.Element {
     setTIA,
     setTradeDirection,
     setRiskPercentage,
+    setError,
   } = useContext(ResultContext) as ResultContextInterface;
 
   const [priceFromAPI, setPriceFromAPI] = useState<number | undefined>(
     undefined
   );
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<any>(null);
+  // const [error, setError] = useState<any>(null);
 
   const availableFundsRef = useRef<any>();
   const tickerRef = useRef<any>();
@@ -119,8 +120,8 @@ function CalculateRiskForm(): JSX.Element {
       }
       return;
     } catch (err) {
-      console.error(error);
-      setError(err);
+      console.error(err);
+      setError(JSON.stringify(err));
     } finally {
       setLoading(false);
     }
@@ -132,7 +133,13 @@ function CalculateRiskForm(): JSX.Element {
     }
     const errors: errorsInterface = {};
 
-    const { tradeDirection, tradePrice, stopLoss, stopLossType } = values;
+    const {
+      availableFunds,
+      tradePrice,
+      tradeDirection,
+      stopLoss,
+      stopLossType,
+    } = values;
 
     if (stopLossType === "2" && tradePrice && stopLoss) {
       // Fixed price SL
@@ -144,7 +151,15 @@ function CalculateRiskForm(): JSX.Element {
         // Short
         errors.stopLoss = "Stop Price must be greater than Trade Price";
       }
-      return;
+    }
+
+    if (stopLossType === "1" && stopLoss > 100) {
+      errors.stopLoss = "Stop Price can't be greater than 100%";
+    }
+
+    if (availableFunds < tradePrice) {
+      errors.availableFunds =
+        "You don't have enough funds to buy a minimun of 1 stock";
     }
 
     return errors;
@@ -174,6 +189,7 @@ function CalculateRiskForm(): JSX.Element {
       stopLoss &&
       stopLossType
     ) {
+      // ESTE CALCULO ESTA OK
       if (stopLossType === "1") {
         // Trailing Stop in %
         if (tradeDirection === "1") {
@@ -204,6 +220,19 @@ function CalculateRiskForm(): JSX.Element {
       } else {
         equityAtRisk = round((stopPrice - tradePrice) * sharesToTrade);
       }
+    }
+
+    console.log(`sharesToTrade`, sharesToTrade);
+    console.log(`positionValue`, positionValue);
+    console.log(`equityAtRisk`, equityAtRisk);
+    console.log(`stopPrice`, stopPrice);
+
+    if (sharesToTrade < 1) {
+      setError(
+        "Not enough to buy at least 1 share with the given parameters. Please perform another calculation with different ones."
+      );
+    } else {
+      setError("");
     }
 
     setShares(sharesToTrade);
@@ -309,7 +338,6 @@ function CalculateRiskForm(): JSX.Element {
                     placeholder="0"
                     value={priceFromAPI ?? undefined}
                     disabled
-                    readonly
                   />
                 </FloatingLabel>
               </Col>
@@ -433,6 +461,11 @@ function CalculateRiskForm(): JSX.Element {
                   name="stopLoss"
                   min="0"
                   placeholder="0"
+                  isInvalid={
+                    Boolean(errors.stopLoss) &&
+                    touched.stopLoss &&
+                    touched.stopLossType
+                  }
                 />
               </FloatingLabel>
               <ButtonGroup size="lg" className="mb-3 col-md-6">
