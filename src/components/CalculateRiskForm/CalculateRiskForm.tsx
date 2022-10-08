@@ -159,11 +159,17 @@ function CalculateRiskForm(): JSX.Element {
       });
 
     if (sharesToTrade < 1) {
-      setError(
+      setResultsAvailable(true);
+      return setError(
         "Not enough to trade at least 1 share with the given parameters. Please perform another calculation with different ones."
       );
-    } else {
-      setError("");
+    }
+
+    if (positionValue >= availableFunds) {
+      setResultsAvailable(true);
+      return setError(
+        "Your position value is greater than your TIA. Assuming that you're trading without leverage (1:1), you won't be able to perform this trade. Please enter different values and calculate again."
+      );
     }
 
     setShares(sharesToTrade);
@@ -174,6 +180,7 @@ function CalculateRiskForm(): JSX.Element {
     availableFunds && setTIA(availableFunds);
     direction && setTradeDirection(direction);
     risk && setRiskPercentage(risk);
+    setError("");
   };
 
   const handleReset: () => void = () => {

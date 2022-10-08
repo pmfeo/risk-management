@@ -24,12 +24,20 @@ export default function calculatePosition({
   tradePrice,
   stopLoss,
   stopLossType,
-}: ICalculateParams): ICalculatePositionResults{
+}: ICalculateParams): ICalculatePositionResults {
   let sharesToTrade = 0;
   let positionValue = 0;
   let equityAtRisk = 0;
   let stopPrice = 0;
   let direction = "";
+
+  console.log(`availableFunds`, availableFunds);
+  console.log(`risk`, risk);
+  console.log(`tradeDirection`, tradeDirection);
+  console.log(`tradePrice`, tradePrice);
+  console.log(`stopLoss`, stopLoss);
+  console.log(`stopLossType`, stopLossType);
+  console.log(`---------------------------------------`);
 
   if (stopLossType === "1") {
     // Trailing Stop in %
@@ -48,10 +56,23 @@ export default function calculatePosition({
     sharesToTrade = Math.floor(
       (availableFunds * (risk / 100)) / (tradePrice - stopPrice)
     );
+
+    if (sharesToTrade * tradePrice >= availableFunds) {
+      sharesToTrade = Math.floor(
+        availableFunds / (tradePrice + (tradePrice - stopPrice))
+      );
+    }
+    console.log(`sharesToTrade`, sharesToTrade);
   } else {
     sharesToTrade = Math.floor(
       (availableFunds * (risk / 100)) / (stopPrice - tradePrice)
     );
+    if (sharesToTrade * tradePrice >= availableFunds) {
+      sharesToTrade = Math.floor(
+        availableFunds / (tradePrice + (stopPrice - tradePrice))
+      );
+    }
+    console.log(`sharesToTrade`, sharesToTrade);
   }
 
   positionValue = roundNumber(sharesToTrade * tradePrice);
@@ -61,6 +82,12 @@ export default function calculatePosition({
   } else {
     equityAtRisk = roundNumber((stopPrice - tradePrice) * sharesToTrade);
   }
+
+  // console.log(`sharesToTrade`, sharesToTrade);
+  console.log(`positionValue`, positionValue);
+  console.log(`equityAtRisk`, equityAtRisk);
+  console.log(`stopPrice`, stopPrice);
+  console.log(`direction`, direction);
 
   return {
     sharesToTrade,
